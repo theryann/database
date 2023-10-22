@@ -1,0 +1,4 @@
+in the root directory $ pip install --upgrade .
+
+- the . is necessary, don't forget to put it
+- the --upgrade is not necessary but it upgrades the dependencies if it is already installed
