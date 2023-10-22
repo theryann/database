@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='database',
-    version='0.1',
+    version='1.0',
     description='wrapper for sqlite database module',
     author='Darian Patzak',
     packages=['database'],
