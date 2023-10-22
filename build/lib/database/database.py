@@ -50,6 +50,25 @@ class Database:
         self.connection.commit()
         print(f"deleted all rows from {table}")
 
+    def ensure_column(self, table_name: str, column_name: str, data_type: str) -> bool:
+        """
+        Insert column into specified table, if it doesn't exist already.
+        @param table_name: Name of the table in the database as string
+        @param column_name: name of the column (case sensitive) to be looked for
+        @param data_type: data type of the column if it needs to be created
+                          ('TEXT'|'INTEGER'|'REAL'|'BLOB'|'NULL')
+
+        @return: returns wether it existed already before
+        """
+
+        existing_columns: list = self.get_all(f'PRAGMA table_info({table_name});')
+        col_exists: bool = any( map(lambda col: col['name'] == column_name, existing_columns) )
+
+        if not col_exists:
+            self.cursor.execute(f'ALTER TABLE {table_name} ADD {column_name} {data_type};')
+
+        return col_exists
+
     def stringify(self, text, preserve_int=False):
         """
         preserve int is an optional argument to dump any value in stringify
@@ -117,8 +136,8 @@ class Database:
     def get_all(self, sql_query) -> dict:
         """
         fetch all rows of sql query
-        :param sql_query: string that contains query
-        :return: dict with rows
+        @param sql_query: string that contains query
+        @return: dict with rows
         """
         self.cursor.execute(sql_query)
         json = [ dict(row) for row in self.cursor.fetchall() ]
