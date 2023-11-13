@@ -107,16 +107,33 @@ class Database:
         except Exception as e:
             print("ERROR:", e)
 
-    def update_cell(self, table, column, primary_keys: dict, new_value) -> None:
+    def update_cell(self, table, column, new_value, primary_keys: dict = None, where: str = None) -> None:
         '''
         update at specific cell,
         specified by column and (multiple) primary keys
+        @param table_name: Name of the table in the database as string
+        @param column_name: name of the column (case sensitive) to be looked for
+        @param new_value: new value of type string or int
+        @param primary_keys: horizontal way of specifying wich cell is meant. As a dict like
+                                {'ID': some_id }
+        @param where: plain SQL input for more complex where clauses -> no primary_keys need to be specified
+
         '''
-        # specify rows by primary key(s). (where condition)
-        condition = ' and '.join([
-            f'{row} = {self.stringify(value)}'
-            for row, value in primary_keys.items()
-        ])
+
+        if primary_keys is None and where is None:
+            raise TypeError("either 'primary_keys' or 'where' needs to specify which cell to update.")
+
+        if primary_keys:
+            # specify rows by primary key(s). (where condition)
+            condition = ' and '.join([
+                f'{row} = {self.stringify(value)}'
+                for row, value in primary_keys.items()
+            ])
+        else:
+            if where:
+                TypeError("'primary_keys' and 'where' cannot both have a value.")
+
+            condition = where
 
         sql = f"""
         update {table}
