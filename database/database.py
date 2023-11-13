@@ -45,7 +45,7 @@ class Database:
         self.cursor.execute(sql)
         self.connection.commit()
         print(f"deleted all rows from {table}")
-        
+
     def ensure_column(self, table_name: str, column_name: str, data_type: str) -> bool:
         """
         Insert column into specified table, if it doesn't exist already.
@@ -138,6 +138,14 @@ class Database:
         self.cursor.execute(sql_query)
         json = [ dict(row) for row in self.cursor.fetchall() ]
         return json
+
+    def execute(self, sql: str) -> None:
+        ''' execute any command through plain SQL '''
+        try:
+            self.cursor.execute(sql)
+            self.connection.commit()
+        except Exception as e:
+            print("ERROR:", e)
 
 if __name__ == "__main__":
     pass
