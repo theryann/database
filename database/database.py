@@ -156,6 +156,49 @@ class Database:
         json = [ dict(row) for row in self.cursor.fetchall() ]
         return json
 
+    def insert_many(self, table: str, rows: list[dict]) -> None:
+        '''
+        Inserts a list of rows into db at once.
+        Each row hast to be a dict like { 'col1': 'val1', col2: 2 }
+        This is significantly faster that multiple insert_row() calls.
+        '''
+        if len(rows) == 0:
+                return
+
+        col_names = [col for col in rows[0]]
+
+        # adds names of the columns (col1, col2, col3)
+        sql = f"""INSERT INTO {table}"""
+        sql += f"\n ({','.join(col_names)})"
+        sql += "\nVALUES\n"
+
+        # add rows of values (val1, val2, val3 ),\n (val1, val2, val3 )
+        for i, row in enumerate(rows):
+            sql += '('
+            sql += ','.join([
+                f"'{row[col]}'"
+                if isinstance(row[col], str)
+                else str(row[col])
+                for col in col_names
+            ])
+
+            sql += ')'
+            if i < len(rows) - 1:
+                sql += ',\n'
+
+        # exceute command
+        try:
+            self.cursor.execute(sql)
+            self.connection.commit()
+        except sqlite3.IntegrityError:
+            # print("row or primary key already exist")
+            pass
+        except sqlite3.OperationalError as e:
+            print("[Operational Error]", e)
+            quit()
+        except Exception as e:
+            print("ERROR:", e)
+
     def execute(self, sql: str) -> None:
         ''' execute any command through plain SQL '''
         try:
